@@ -4,13 +4,18 @@ import (
 	"context"
 	"go_grpc_demo/proto/proto"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"log"
 )
 
-const Port = "ddns.lingdian.site:9000"
+const Port = "172.17.71.143:9000"
 
 func main() {
-	conn, err := grpc.Dial(Port, grpc.WithInsecure())
+	fromFile, err := credentials.NewClientTLSFromFile("../config/server.pem", "www.eline.com")
+	if err != nil {
+		panic(err)
+	}
+	conn, err := grpc.Dial(Port, grpc.WithTransportCredentials(fromFile))
 	if err != nil {
 		panic(err)
 	}
