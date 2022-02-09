@@ -8,7 +8,7 @@ import (
 	"log"
 )
 
-const Port = "172.17.71.143:9000"
+const Port = "127.0.0.1:9000"
 
 func main() {
 	fromFile, err := credentials.NewClientTLSFromFile("../config/server.pem", "www.eline.com")

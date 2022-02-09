@@ -1,7 +1,9 @@
 package main
 
 import (
+	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"go_grpc_demo/proto/proto"
+	"go_grpc_demo/server/interceptor"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -14,6 +16,10 @@ type SearchService struct {
 }
 
 func (s SearchService) Search(c context.Context, request *proto.SearchRequest) (*proto.SearchResponse, error) {
+	var a = 10
+	var b = 10
+	b = b * 0
+	a = a / (8 * b)
 	return &proto.SearchResponse{Response: request.GetRequest() + " Server"}, nil
 }
 
@@ -22,7 +28,15 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	server := grpc.NewServer(grpc.Creds(tlsFromFile))
+	options := []grpc.ServerOption{
+		grpc.Creds(tlsFromFile),
+		grpc_middleware.WithUnaryServerChain(
+			interceptor.RecoveryInterceptor,
+			interceptor.LoggingInterceptor,
+		),
+	}
+
+	server := grpc.NewServer(options...)
 	proto.RegisterSearchServiceServer(server, SearchService{})
 	listen, err := net.Listen("tcp", Port)
 	if err != nil {
