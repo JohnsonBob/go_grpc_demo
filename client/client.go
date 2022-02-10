@@ -10,12 +10,21 @@ import (
 
 const Port = "127.0.0.1:9000"
 
+type Auth struct {
+	AppKey    string
+	AppSecret string
+}
+
 func main() {
 	fromFile, err := credentials.NewClientTLSFromFile("../config/server.pem", "www.eline.com")
 	if err != nil {
 		panic(err)
 	}
-	conn, err := grpc.Dial(Port, grpc.WithTransportCredentials(fromFile))
+	auth := Auth{
+		AppKey:    "eddycjy",
+		AppSecret: "20181005",
+	}
+	conn, err := grpc.Dial(Port, grpc.WithTransportCredentials(fromFile), grpc.WithPerRPCCredentials(&auth))
 	if err != nil {
 		panic(err)
 	}
@@ -27,4 +36,12 @@ func main() {
 	}
 
 	log.Printf("resp: %s", search.GetResponse())
+}
+
+func (a *Auth) GetRequestMetadata(ctx context.Context, uri ...string) (map[string]string, error) {
+	return map[string]string{"app_key": a.AppKey, "app_secret": a.AppSecret}, nil
+}
+
+func (a *Auth) RequireTransportSecurity() bool {
+	return true
 }
