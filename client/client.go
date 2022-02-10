@@ -6,6 +6,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"log"
+	"time"
 )
 
 const Port = "127.0.0.1:9000"
@@ -30,7 +31,10 @@ func main() {
 	}
 	defer func() { _ = conn.Close() }()
 	client := proto.NewSearchServiceClient(conn)
-	search, err := client.Search(context.Background(), &proto.SearchRequest{Request: "gRPC"})
+
+	ctx, cancel := context.WithTimeout(context.Background(), 6*time.Second)
+	defer cancel()
+	search, err := client.Search(ctx, &proto.SearchRequest{Request: "gRPC"})
 	if err != nil {
 		log.Fatalf("client.Search err: %v", err)
 	}
